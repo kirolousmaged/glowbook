@@ -7,10 +7,19 @@ export default async function AnalyticsPage() {
   const today = new Date().toISOString().split("T")[0];
   const monthStart = today.slice(0, 7) + "-01";
 
-  const allBookings = await prisma.booking.findMany({
-    select: { serviceType: true, status: true, bookingDate: true, clientPhone: true },
-  });
-  const monthCount = await prisma.booking.count({ where: { bookingDate: { gte: monthStart } } });
+  let allBookings: { serviceType: string; status: string; bookingDate: string; clientPhone: string }[] = [];
+  let monthCount = 0;
+
+  try {
+    [allBookings, monthCount] = await Promise.all([
+      prisma.booking.findMany({
+        select: { serviceType: true, status: true, bookingDate: true, clientPhone: true },
+      }),
+      prisma.booking.count({ where: { bookingDate: { gte: monthStart } } }),
+    ]);
+  } catch {
+    // DB not available
+  }
 
   // Service breakdown
   const serviceMap: Record<string, number> = {};

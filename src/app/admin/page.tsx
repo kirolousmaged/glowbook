@@ -17,18 +17,27 @@ export default async function AdminDashboard() {
   const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
   const monthStart = today.slice(0, 7) + "-01";
 
-  const [todayBookings, tomorrowCount, monthCount, totalCount, recentBookings, allBookings] =
-    await Promise.all([
-      prisma.booking.findMany({
-        where: { bookingDate: today },
-        orderBy: { bookingTime: "asc" },
-      }),
-      prisma.booking.count({ where: { bookingDate: tomorrow } }),
-      prisma.booking.count({ where: { bookingDate: { gte: monthStart } } }),
-      prisma.booking.count(),
-      prisma.booking.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
-      prisma.booking.findMany({ select: { bookingDate: true, id: true }, orderBy: { bookingDate: "asc" } }),
-    ]);
+  let todayBookings: Awaited<ReturnType<typeof prisma.booking.findMany>> = [];
+  let tomorrowCount = 0, monthCount = 0, totalCount = 0;
+  let recentBookings: Awaited<ReturnType<typeof prisma.booking.findMany>> = [];
+  let allBookings: { bookingDate: string; id: string }[] = [];
+
+  try {
+    [todayBookings, tomorrowCount, monthCount, totalCount, recentBookings, allBookings] =
+      await Promise.all([
+        prisma.booking.findMany({
+          where: { bookingDate: today },
+          orderBy: { bookingTime: "asc" },
+        }),
+        prisma.booking.count({ where: { bookingDate: tomorrow } }),
+        prisma.booking.count({ where: { bookingDate: { gte: monthStart } } }),
+        prisma.booking.count(),
+        prisma.booking.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
+        prisma.booking.findMany({ select: { bookingDate: true, id: true }, orderBy: { bookingDate: "asc" } }),
+      ]);
+  } catch {
+    // DB not available
+  }
 
   // Build day-count map for the calendar
   const dayCountMap: Record<string, number> = {};

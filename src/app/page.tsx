@@ -65,10 +65,17 @@ const TESTIMONIALS = [
 ];
 
 export default async function LandingPage() {
-  const [dbServices, dbGallery] = await Promise.all([
-    prisma.service.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
-    prisma.galleryImage.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
-  ]);
+  let dbServices: Awaited<ReturnType<typeof prisma.service.findMany>> = [];
+  let dbGallery: Awaited<ReturnType<typeof prisma.galleryImage.findMany>> = [];
+
+  try {
+    [dbServices, dbGallery] = await Promise.all([
+      prisma.service.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
+      prisma.galleryImage.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
+    ]);
+  } catch {
+    // DB not reachable — render with fallback content
+  }
 
   const services = dbServices.length > 0 ? dbServices : null;
   const gallery = dbGallery.length > 0
