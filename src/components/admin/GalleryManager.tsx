@@ -25,13 +25,20 @@ export default function GalleryManager() {
 
   const fetchImages = async () => {
     setLoading(true);
-    const [imgRes, svcRes] = await Promise.all([
-      fetch("/api/admin/gallery"),
-      fetch("/api/admin/services"),
-    ]);
-    setImages(await imgRes.json());
-    setServices(await svcRes.json());
-    setLoading(false);
+    try {
+      const [imgRes, svcRes] = await Promise.all([
+        fetch("/api/admin/gallery"),
+        fetch("/api/admin/services"),
+      ]);
+      const [imgData, svcData] = await Promise.all([imgRes.json(), svcRes.json()]);
+      setImages(Array.isArray(imgData) ? imgData : []);
+      setServices(Array.isArray(svcData) ? svcData : []);
+    } catch {
+      setImages([]);
+      setServices([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchImages(); }, []);

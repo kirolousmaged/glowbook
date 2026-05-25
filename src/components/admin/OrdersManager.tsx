@@ -48,9 +48,15 @@ export default function OrdersManager() {
     if (filterDate) params.set("date", filterDate);
     if (filterService) params.set("service", filterService);
     if (filterStatus) params.set("status", filterStatus);
-    const res = await fetch(`/api/admin/bookings?${params}`);
-    setBookings(await res.json());
-    setLoading(false);
+    try {
+      const res = await fetch(`/api/admin/bookings?${params}`);
+      const data = await res.json();
+      setBookings(Array.isArray(data) ? data : []);
+    } catch {
+      setBookings([]);
+    } finally {
+      setLoading(false);
+    }
   }, [search, filterDate, filterService, filterStatus]);
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
@@ -61,14 +67,22 @@ export default function OrdersManager() {
 
   const handleSave = async () => {
     setSaving(true);
-    const isEdit = modal === "edit";
-    const res = await fetch(
-      isEdit ? `/api/admin/bookings/${form.id}` : "/api/admin/bookings",
-      { method: isEdit ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) }
-    );
-    setSaving(false);
-    if (res.ok) { closeModal(); fetchBookings(); }
-    else alert("Save failed. Check all fields.");
+    try {
+      const isEdit = modal === "edit";
+      const res = await fetch(
+        isEdit ? `/api/admin/bookings/${form.id}` : "/api/admin/bookings",
+        { method: isEdit ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) }
+      );
+      if (res.ok) { closeModal(); fetchBookings(); }
+      else {
+        const d = await res.json().catch(() => ({}));
+        alert(d.error ?? "Save failed. Check all fields.");
+      }
+    } catch {
+      alert("Network error. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id: string, name: string) => {

@@ -16,7 +16,9 @@ export default function UsersPage() {
   useEffect(() => {
     fetch("/api/admin/users")
       .then((r) => r.json())
-      .then((data) => { setUsers(Array.isArray(data) ? data : []); setLoading(false); });
+      .then((data) => { setUsers(Array.isArray(data) ? data : []); })
+      .catch(() => setUsers([]))
+      .finally(() => setLoading(false));
   }, []);
 
   const filtered = users.filter((u) =>

@@ -126,9 +126,15 @@ export default function ServiceManager() {
 
   const fetchServices = async () => {
     setLoading(true);
-    const res = await fetch("/api/admin/services");
-    setServices(await res.json());
-    setLoading(false);
+    try {
+      const res = await fetch("/api/admin/services");
+      const data = await res.json();
+      setServices(Array.isArray(data) ? data : []);
+    } catch {
+      setServices([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchServices(); }, []);
@@ -164,18 +170,23 @@ export default function ServiceManager() {
       availableDays: form.availableDays.slice().sort((a, b) => a - b).join(","),
       timeSlots: sortTimes(form.timeSlots).join(","),
     };
-    const res = await fetch(url, {
-      method: modal === "edit" ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    setSaving(false);
-    if (res.ok) {
-      closeModal();
-      fetchServices();
-    } else {
-      const d = await res.json();
-      alert(d.error ?? "Save failed.");
+    try {
+      const res = await fetch(url, {
+        method: modal === "edit" ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        closeModal();
+        fetchServices();
+      } else {
+        const d = await res.json().catch(() => ({}));
+        alert(d.error ?? "Save failed.");
+      }
+    } catch {
+      alert("Network error. Please try again.");
+    } finally {
+      setSaving(false);
     }
   };
 

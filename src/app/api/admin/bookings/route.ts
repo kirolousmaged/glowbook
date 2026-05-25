@@ -12,27 +12,31 @@ export async function GET(request: Request) {
   const service = searchParams.get("service") ?? "";
   const status = searchParams.get("status") ?? "";
 
-  const bookings = await prisma.booking.findMany({
-    where: {
-      AND: [
-        search
-          ? {
-              OR: [
-                { clientName: { contains: search } },
-                { clientPhone: { contains: search } },
-                { clientEmail: { contains: search } },
-              ],
-            }
-          : {},
-        date ? { bookingDate: date } : {},
-        service ? { serviceType: service } : {},
-        status ? { status } : {},
-      ],
-    },
-    orderBy: [{ bookingDate: "desc" }, { bookingTime: "asc" }],
-  });
-
-  return NextResponse.json(bookings);
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: {
+        AND: [
+          search
+            ? {
+                OR: [
+                  { clientName: { contains: search, mode: "insensitive" } },
+                  { clientPhone: { contains: search, mode: "insensitive" } },
+                  { clientEmail: { contains: search, mode: "insensitive" } },
+                ],
+              }
+            : {},
+          date ? { bookingDate: date } : {},
+          service ? { serviceType: service } : {},
+          status ? { status } : {},
+        ],
+      },
+      orderBy: [{ bookingDate: "desc" }, { bookingTime: "asc" }],
+    });
+    return NextResponse.json(bookings);
+  } catch (error) {
+    console.error("GET /api/admin/bookings:", error);
+    return NextResponse.json({ error: "Database error" }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
@@ -45,9 +49,13 @@ export async function POST(request: Request) {
   if (!clientName || !clientPhone || !bookingDate || !bookingTime || !serviceType)
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
 
-  const booking = await prisma.booking.create({
-    data: { clientName, clientPhone, clientEmail: clientEmail || null, serviceType, bookingDate, bookingTime, notes: notes || null, promoCode: promoCode || null },
-  });
-
-  return NextResponse.json(booking, { status: 201 });
+  try {
+    const booking = await prisma.booking.create({
+      data: { clientName, clientPhone, clientEmail: clientEmail || null, serviceType, bookingDate, bookingTime, notes: notes || null, promoCode: promoCode || null },
+    });
+    return NextResponse.json(booking, { status: 201 });
+  } catch (error) {
+    console.error("POST /api/admin/bookings:", error);
+    return NextResponse.json({ error: "Database error" }, { status: 500 });
+  }
 }
