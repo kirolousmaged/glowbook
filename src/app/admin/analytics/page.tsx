@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import { TrendingUp, Users, CalendarDays, CheckCircle2, XCircle, Clock } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function AnalyticsPage() {
   const today = new Date().toISOString().split("T")[0];
   const monthStart = today.slice(0, 7) + "-01";

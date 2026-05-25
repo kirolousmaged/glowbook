@@ -8,6 +8,8 @@ import {
 import { prisma } from "@/lib/db";
 import type { LucideIcon } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 const ICON_MAP: Record<string, LucideIcon> = {
   Sparkles, Gem, Star, Palette, Eye, Scissors, Heart, Wand2,
   Brush, Crown, Leaf, Sun, Zap, Droplets, Flower2, Ribbon,

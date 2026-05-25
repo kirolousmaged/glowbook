@@ -4,6 +4,8 @@ import AdminCalendar from "@/components/admin/AdminCalendar";
 import SendScheduleBtn from "@/components/admin/SendScheduleBtn";
 import { CalendarCheck, CalendarClock, TrendingUp, Users, ArrowRight, Clock } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 const STATUS_COLORS: Record<string, string> = {
   confirmed: "bg-blue-50 text-blue-600 border-blue-100",
   completed: "bg-green-50 text-green-600 border-green-100",
