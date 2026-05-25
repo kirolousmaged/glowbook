@@ -62,7 +62,7 @@ export async function GET(request: Request) {
           doc.text(b.clientName, 100, y, { width: 180 });
           doc.text(b.serviceType, 290, y, { width: 130 });
           doc.text(
-            `${b.clientPhone}${b.instagramId ? ` (${b.instagramId})` : ""}`,
+            `${b.clientPhone}${b.clientEmail ? ` (${b.clientEmail})` : ""}`,
             430,
             y,
             { width: 120 }

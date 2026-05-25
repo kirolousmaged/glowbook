@@ -37,8 +37,8 @@ export default function BookingCard({ booking }: { booking: Booking }) {
         <p className="text-xs text-glam-text/60 mt-0.5">{booking.serviceType}</p>
         <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
           <span className="text-xs text-glam-text/70">{booking.clientPhone}</span>
-          {booking.instagramId && (
-            <span className="text-xs text-primary">{booking.instagramId}</span>
+          {booking.clientEmail && (
+            <span className="text-xs text-primary">{booking.clientEmail}</span>
           )}
         </div>
       </div>
