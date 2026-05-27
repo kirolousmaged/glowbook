@@ -1,129 +1,171 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Save, CheckCircle2, Loader2 } from "lucide-react";
 
 const PLATFORMS = [
-  { value: "instagram", label: "Instagram" },
-  { value: "tiktok",    label: "TikTok" },
-  { value: "facebook",  label: "Facebook" },
-  { value: "whatsapp",  label: "WhatsApp" },
-  { value: "youtube",   label: "YouTube" },
-  { value: "twitter",   label: "Twitter / X" },
-  { value: "snapchat",  label: "Snapchat" },
-];
+  {
+    value: "instagram",
+    label: "Instagram",
+    placeholder: "https://instagram.com/yourpage",
+    hint: "Your Instagram profile URL",
+  },
+  {
+    value: "tiktok",
+    label: "TikTok",
+    placeholder: "https://tiktok.com/@yourpage",
+    hint: "Your TikTok profile URL",
+  },
+  {
+    value: "facebook",
+    label: "Facebook",
+    placeholder: "https://facebook.com/yourpage",
+    hint: "Your Facebook page URL",
+  },
+  {
+    value: "whatsapp",
+    label: "WhatsApp",
+    placeholder: "20123456789",
+    hint: "Phone number with country code, no + or spaces (e.g. 20123456789)",
+  },
+] as const;
 
-type SocialLink = { id: string; platform: string; url: string };
+type Platform = (typeof PLATFORMS)[number]["value"];
+
+type State = Record<Platform, { value: string; saving: boolean; saved: boolean; error: string }>;
+
+const empty = () => ({ value: "", saving: false, saved: false, error: "" });
 
 export default function SocialLinksManager() {
-  const [links, setLinks]     = useState<SocialLink[]>([]);
+  const [fields, setFields] = useState<State>({
+    instagram: empty(),
+    tiktok:    empty(),
+    facebook:  empty(),
+    whatsapp:  empty(),
+  });
   const [loading, setLoading] = useState(true);
-  const [platform, setPlatform] = useState("instagram");
-  const [url, setUrl]         = useState("");
-  const [saving, setSaving]   = useState(false);
-  const [error, setError]     = useState("");
 
   useEffect(() => {
     fetch("/api/admin/social-links")
       .then((r) => r.json())
-      .then((data) => setLinks(Array.isArray(data) ? data : []))
-      .catch(() => setLinks([]))
+      .then((data: { platform: string; url: string }[]) => {
+        if (!Array.isArray(data)) return;
+        setFields((prev) => {
+          const next = { ...prev };
+          for (const link of data) {
+            const p = link.platform as Platform;
+            if (p in next) {
+              // For WhatsApp, strip the wa.me prefix to show just the number
+              const display =
+                p === "whatsapp"
+                  ? link.url.replace("https://wa.me/", "")
+                  : link.url;
+              next[p] = { ...next[p], value: display };
+            }
+          }
+          return next;
+        });
+      })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  const handleAdd = async () => {
-    if (!url.trim()) { setError("Please enter a URL."); return; }
-    setSaving(true); setError("");
+  const set = (p: Platform, patch: Partial<State[Platform]>) =>
+    setFields((prev) => ({ ...prev, [p]: { ...prev[p], ...patch } }));
+
+  const handleSave = async (p: Platform) => {
+    const raw = fields[p].value.trim();
+    if (!raw) {
+      set(p, { error: "Please enter a value." });
+      return;
+    }
+
+    const url = p === "whatsapp" ? `https://wa.me/${raw.replace(/\D/g, "")}` : raw;
+    set(p, { saving: true, error: "", saved: false });
+
     try {
-      const res  = await fetch("/api/admin/social-links", {
+      const res = await fetch("/api/admin/social-links", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ platform, url: url.trim() }),
+        body: JSON.stringify({ platform: p, url }),
       });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Failed to save."); return; }
-      setLinks((prev) => [...prev, data]);
-      setUrl("");
+      if (!res.ok) {
+        const d = await res.json();
+        set(p, { saving: false, error: d.error ?? "Failed to save." });
+      } else {
+        set(p, { saving: false, saved: true });
+        setTimeout(() => set(p, { saved: false }), 2500);
+      }
     } catch {
-      setError("Network error.");
-    } finally {
-      setSaving(false);
+      set(p, { saving: false, error: "Network error." });
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleClear = async (p: Platform) => {
+    set(p, { saving: true, error: "", saved: false });
     try {
       await fetch("/api/admin/social-links", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ platform: p }),
       });
-      setLinks((prev) => prev.filter((l) => l.id !== id));
-    } catch { /* ignore */ }
+      set(p, { saving: false, value: "", saved: false });
+    } catch {
+      set(p, { saving: false, error: "Network error." });
+    }
   };
 
-  if (loading) return <p className="text-sm text-glam-text/50 py-2">Loading…</p>;
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 py-6 text-sm text-glam-text/50">
+        <Loader2 size={14} className="animate-spin" /> Loading…
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      {links.length === 0 ? (
-        <p className="text-sm text-glam-text/40 py-3">No social links added yet.</p>
-      ) : (
-        <ul className="space-y-2">
-          {links.map((link) => {
-            const label = PLATFORMS.find((p) => p.value === link.platform)?.label ?? link.platform;
-            return (
-              <li
-                key={link.id}
-                className="flex items-center justify-between gap-3 bg-pastel-pink/30 rounded-xl px-4 py-3"
+    <div className="space-y-5">
+      {PLATFORMS.map(({ value: p, label, placeholder, hint }) => {
+        const f = fields[p];
+        return (
+          <div key={p} className="space-y-1.5">
+            <label className="block text-sm font-bold text-glam-text">{label}</label>
+            <p className="text-xs text-glam-text/45">{hint}</p>
+            <div className="flex gap-2">
+              <input
+                value={f.value}
+                onChange={(e) => set(p, { value: e.target.value, error: "", saved: false })}
+                onKeyDown={(e) => e.key === "Enter" && handleSave(p)}
+                placeholder={placeholder}
+                className="flex-1 px-3 py-2.5 rounded-xl border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+              />
+              <button
+                onClick={() => handleSave(p)}
+                disabled={f.saving}
+                className="flex items-center gap-1.5 bg-primary text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-secondary transition-colors disabled:opacity-50 cursor-pointer shrink-0"
               >
-                <div className="min-w-0">
-                  <p className="text-sm font-bold text-glam-text">{label}</p>
-                  <p className="text-xs text-glam-text/50 truncate">{link.url}</p>
-                </div>
+                {f.saving ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : f.saved ? (
+                  <CheckCircle2 size={14} />
+                ) : (
+                  <Save size={14} />
+                )}
+                {f.saving ? "Saving…" : f.saved ? "Saved!" : "Save"}
+              </button>
+              {f.value && !f.saving && (
                 <button
-                  onClick={() => handleDelete(link.id)}
-                  className="p-2 rounded-xl text-glam-text/30 hover:text-red-400 hover:bg-red-50 transition-colors cursor-pointer shrink-0"
-                  aria-label="Delete"
+                  onClick={() => handleClear(p)}
+                  className="px-3 py-2.5 rounded-xl border border-border text-xs text-glam-text/50 hover:text-red-400 hover:border-red-200 transition-colors cursor-pointer"
                 >
-                  <Trash2 size={15} />
+                  Clear
                 </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      <div className="border-t border-border pt-4">
-        <p className="text-xs font-bold text-glam-text/50 uppercase tracking-wide mb-3">Add Social Link</p>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <select
-            value={platform}
-            onChange={(e) => setPlatform(e.target.value)}
-            className="px-3 py-2.5 rounded-xl border border-border bg-white text-sm font-medium text-glam-text focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
-          >
-            {PLATFORMS.map((p) => (
-              <option key={p.value} value={p.value}>{p.label}</option>
-            ))}
-          </select>
-          <input
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-            placeholder="https://instagram.com/yourpage"
-            className="flex-1 px-3 py-2.5 rounded-xl border border-border bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
-          <button
-            onClick={handleAdd}
-            disabled={saving}
-            className="flex items-center justify-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-secondary transition-colors disabled:opacity-50 cursor-pointer"
-          >
-            <Plus size={15} />
-            Add
-          </button>
-        </div>
-        {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
-      </div>
+              )}
+            </div>
+            {f.error && <p className="text-xs text-red-500">{f.error}</p>}
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -375,7 +375,7 @@ function BookingFormContent() {
     <div className="min-h-screen bg-background pb-10">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-xl border-b border-border">
-        <div className="max-w-md mx-auto px-6 h-14 flex items-center gap-3">
+        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center gap-3">
           <Link
             href="/"
             aria-label="Go back"
@@ -387,10 +387,10 @@ function BookingFormContent() {
         </div>
       </div>
 
-      <div className="max-w-md mx-auto px-6 pt-8">
+      <div className="max-w-5xl mx-auto px-6 pt-8">
         {/* Sign-in banner */}
         {!user && !loadingUser && (
-          <div className="mb-4 bg-pastel-pink/50 border border-primary/20 rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
+          <div className="mb-6 bg-pastel-pink/50 border border-primary/20 rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
             <p className="text-xs text-glam-text">
               Have an account? <strong>Sign in</strong> to auto-fill your details.
             </p>
@@ -403,155 +403,169 @@ function BookingFormContent() {
           </div>
         )}
 
-        <div className="bg-white rounded-3xl p-6 border border-border shadow-sm shadow-primary/5">
-          <p className="text-xs text-muted text-center mb-6">Fill in your details — takes under 60 seconds.</p>
+        <form onSubmit={handleSubmit} noValidate>
+          {/* Two-column on desktop, stacked on mobile */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-            {/* Name */}
-            <div>
-              <label htmlFor="clientName" className="block text-xs font-semibold text-glam-text mb-1.5">
-                Full Name <span className="text-primary" aria-hidden="true">*</span>
-              </label>
-              <div className="relative">
-                <User size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" aria-hidden="true" />
-                <input
-                  id="clientName"
-                  type="text"
-                  required
-                  autoComplete="name"
-                  value={form.clientName}
-                  onChange={(e) => setForm({ ...form, clientName: e.target.value })}
-                  className={`${INPUT_CLASS} pl-10`}
-                  placeholder="e.g., Farida Amin"
-                />
-              </div>
-            </div>
+            {/* ── Left: Personal details ── */}
+            <div className="bg-white rounded-3xl p-6 border border-border shadow-sm shadow-primary/5">
+              <p className="text-xs font-bold text-primary uppercase tracking-widest text-center mb-6">Your Details</p>
+              <div className="space-y-4">
 
-            {/* Phone */}
-            <div>
-              <label htmlFor="clientPhone" className="block text-xs font-semibold text-glam-text mb-1.5">
-                WhatsApp / Phone <span className="text-primary" aria-hidden="true">*</span>
-              </label>
-              <div className="relative">
-                <Phone size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" aria-hidden="true" />
-                <input
-                  id="clientPhone"
-                  type="tel"
-                  required
-                  autoComplete="tel"
-                  value={form.clientPhone}
-                  onChange={(e) => setForm({ ...form, clientPhone: e.target.value })}
-                  className={`${INPUT_CLASS} pl-10`}
-                  placeholder="010XXXXXXXX"
-                />
-              </div>
-            </div>
+                {/* Name */}
+                <div>
+                  <label htmlFor="clientName" className="block text-xs font-semibold text-glam-text mb-1.5">
+                    Full Name <span className="text-primary" aria-hidden="true">*</span>
+                  </label>
+                  <div className="relative">
+                    <User size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" aria-hidden="true" />
+                    <input
+                      id="clientName"
+                      type="text"
+                      required
+                      autoComplete="name"
+                      value={form.clientName}
+                      onChange={(e) => setForm({ ...form, clientName: e.target.value })}
+                      className={`${INPUT_CLASS} pl-10`}
+                      placeholder="e.g., Farida Amin"
+                    />
+                  </div>
+                </div>
 
-            {/* Email */}
-            <div>
-              <label htmlFor="clientEmail" className="block text-xs font-semibold text-glam-text mb-1.5">
-                Email <span className="text-muted font-normal">(optional)</span>
-              </label>
-              <div className="relative">
-                <Mail size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" aria-hidden="true" />
-                <input
-                  id="clientEmail"
-                  type="email"
-                  autoComplete="email"
-                  value={form.clientEmail}
-                  onChange={(e) => setForm({ ...form, clientEmail: e.target.value })}
-                  className={`${INPUT_CLASS} pl-10`}
-                  placeholder="you@example.com"
-                />
-              </div>
-            </div>
+                {/* Phone */}
+                <div>
+                  <label htmlFor="clientPhone" className="block text-xs font-semibold text-glam-text mb-1.5">
+                    WhatsApp / Phone <span className="text-primary" aria-hidden="true">*</span>
+                  </label>
+                  <div className="relative">
+                    <Phone size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" aria-hidden="true" />
+                    <input
+                      id="clientPhone"
+                      type="tel"
+                      required
+                      autoComplete="tel"
+                      value={form.clientPhone}
+                      onChange={(e) => setForm({ ...form, clientPhone: e.target.value })}
+                      className={`${INPUT_CLASS} pl-10`}
+                      placeholder="010XXXXXXXX"
+                    />
+                  </div>
+                </div>
 
-            {/* Service */}
-            <div>
-              <label htmlFor="serviceType" className="block text-xs font-semibold text-glam-text mb-1.5">
-                Service
-              </label>
-              <div className="relative">
-                <select
-                  id="serviceType"
-                  value={form.serviceType}
-                  onChange={(e) => setForm({ ...form, serviceType: e.target.value })}
-                  disabled={services.length === 0}
-                  className={`${INPUT_CLASS} pr-10 cursor-pointer appearance-none disabled:opacity-60 disabled:cursor-not-allowed`}
-                >
-                  {services.length === 0 ? (
-                    <option value="">Loading services…</option>
-                  ) : (
-                    [...services]
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .map(s => (
-                        <option key={s.id} value={s.name}>
-                          {s.name}
-                        </option>
-                      ))
-                  )}
-                </select>
-                <ChevronDown size={15} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" aria-hidden="true" />
-              </div>
-            </div>
+                {/* Email */}
+                <div>
+                  <label htmlFor="clientEmail" className="block text-xs font-semibold text-glam-text mb-1.5">
+                    Email <span className="text-muted font-normal">(optional)</span>
+                  </label>
+                  <div className="relative">
+                    <Mail size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" aria-hidden="true" />
+                    <input
+                      id="clientEmail"
+                      type="email"
+                      autoComplete="email"
+                      value={form.clientEmail}
+                      onChange={(e) => setForm({ ...form, clientEmail: e.target.value })}
+                      className={`${INPUT_CLASS} pl-10`}
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                </div>
 
-            {/* Custom Calendar */}
-            <div>
-              <label className="block text-xs font-semibold text-glam-text mb-1.5">
-                Date <span className="text-primary" aria-hidden="true">*</span>
-              </label>
-              <CalendarPicker
-                value={form.bookingDate}
-                onChange={(d) => setForm({ ...form, bookingDate: d })}
-                availableDays={availableDays}
-              />
-              {form.bookingDate && (
-                <p className="text-xs text-primary font-semibold mt-2 pl-1">
-                  Selected: {new Date(form.bookingDate + "T00:00:00").toLocaleDateString("en-EG", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-                </p>
-              )}
-            </div>
-
-            {/* Time grid */}
-            <div>
-              <div className="flex items-center gap-2 mb-2.5">
-                <Clock size={13} className="text-muted" aria-hidden="true" />
-                <label className="text-xs font-semibold text-glam-text">
-                  Preferred Time <span className="text-primary" aria-hidden="true">*</span>
-                </label>
-              </div>
-              <div className="grid grid-cols-4 gap-2" role="group" aria-label="Select appointment time">
-                {availableTimes.map((time) => {
-                  const isSelected = form.bookingTime === time;
-                  return (
-                    <button
-                      key={time}
-                      type="button"
-                      onClick={() => setForm({ ...form, bookingTime: time })}
-                      aria-pressed={isSelected}
-                      className={`py-3 text-xs font-semibold rounded-xl border text-center transition-all duration-150 cursor-pointer min-h-[44px] ${
-                        isSelected
-                          ? "bg-primary text-white border-primary shadow-md shadow-primary/25"
-                          : "bg-background text-glam-text border-border hover:border-primary/50 hover:text-primary"
-                      }`}
+                {/* Service */}
+                <div>
+                  <label htmlFor="serviceType" className="block text-xs font-semibold text-glam-text mb-1.5">
+                    Service
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="serviceType"
+                      value={form.serviceType}
+                      onChange={(e) => setForm({ ...form, serviceType: e.target.value })}
+                      disabled={services.length === 0}
+                      className={`${INPUT_CLASS} pr-10 cursor-pointer appearance-none disabled:opacity-60 disabled:cursor-not-allowed`}
                     >
-                      {time}
-                    </button>
-                  );
-                })}
+                      {services.length === 0 ? (
+                        <option value="">Loading services…</option>
+                      ) : (
+                        [...services]
+                          .sort((a, b) => a.name.localeCompare(b.name))
+                          .map(s => (
+                            <option key={s.id} value={s.name}>{s.name}</option>
+                          ))
+                      )}
+                    </select>
+                    <ChevronDown size={15} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" aria-hidden="true" />
+                  </div>
+                </div>
+
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={!form.bookingDate || !form.bookingTime}
-              className="w-full flex items-center justify-center gap-2 bg-primary text-white font-bold py-4 rounded-2xl shadow-md shadow-primary/25 hover:bg-secondary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-2 min-h-[52px] cursor-pointer active:scale-[0.98]"
-            >
-              Next: Choose Payment
-              <CreditCard size={16} aria-hidden="true" />
-            </button>
-          </form>
-        </div>
+            {/* ── Right: Date & Time ── */}
+            <div className="bg-white rounded-3xl p-6 border border-border shadow-sm shadow-primary/5 flex flex-col">
+              <p className="text-xs font-bold text-primary uppercase tracking-widest text-center mb-6">Pick Your Date &amp; Time</p>
+
+              <div className="space-y-4 flex-1">
+                {/* Calendar */}
+                <div>
+                  <label className="block text-xs font-semibold text-glam-text mb-1.5">
+                    Date <span className="text-primary" aria-hidden="true">*</span>
+                  </label>
+                  <CalendarPicker
+                    value={form.bookingDate}
+                    onChange={(d) => setForm({ ...form, bookingDate: d })}
+                    availableDays={availableDays}
+                  />
+                  {form.bookingDate && (
+                    <p className="text-xs text-primary font-semibold mt-2 pl-1">
+                      {new Date(form.bookingDate + "T00:00:00").toLocaleDateString("en-EG", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                    </p>
+                  )}
+                </div>
+
+                {/* Time grid */}
+                <div>
+                  <div className="flex items-center gap-2 mb-2.5">
+                    <Clock size={13} className="text-muted" aria-hidden="true" />
+                    <label className="text-xs font-semibold text-glam-text">
+                      Preferred Time <span className="text-primary" aria-hidden="true">*</span>
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2" role="group" aria-label="Select appointment time">
+                    {availableTimes.map((time) => {
+                      const isSelected = form.bookingTime === time;
+                      return (
+                        <button
+                          key={time}
+                          type="button"
+                          onClick={() => setForm({ ...form, bookingTime: time })}
+                          aria-pressed={isSelected}
+                          className={`py-3 text-xs font-semibold rounded-xl border text-center transition-all duration-150 cursor-pointer min-h-[44px] ${
+                            isSelected
+                              ? "bg-primary text-white border-primary shadow-md shadow-primary/25"
+                              : "bg-background text-glam-text border-border hover:border-primary/50 hover:text-primary"
+                          }`}
+                        >
+                          {time}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={!form.bookingDate || !form.bookingTime}
+                className="w-full flex items-center justify-center gap-2 bg-primary text-white font-bold py-4 rounded-2xl shadow-md shadow-primary/25 hover:bg-secondary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-6 min-h-[52px] cursor-pointer active:scale-[0.98]"
+              >
+                Next: Choose Payment
+                <CreditCard size={16} aria-hidden="true" />
+              </button>
+            </div>
+
+          </div>
+        </form>
       </div>
     </div>
   );

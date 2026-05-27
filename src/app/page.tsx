@@ -136,7 +136,8 @@ export default async function LandingPage() {
     : GALLERY_FALLBACK;
 
   const whatsappUrl = dbSocials.find((s) => s.platform === "whatsapp")?.url ?? "https://wa.me/201000000000";
-  const otherSocials = dbSocials.filter((s) => s.platform !== "whatsapp");
+  // Always show these 3 in footer; greyed out when not yet configured
+  const FOOTER_PLATFORMS = ["instagram", "tiktok", "facebook"] as const;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -464,23 +465,32 @@ export default async function LandingPage() {
                 Premium nail artistry &amp; lash treatments in Cairo. Book in 60 seconds.
               </p>
 
-              {/* Social icons from DB */}
-              {otherSocials.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {otherSocials.map((s) => (
+              {/* Social icons — always show, active when URL configured */}
+              <div className="flex flex-wrap gap-2">
+                {FOOTER_PLATFORMS.map((platform) => {
+                  const link = dbSocials.find((s) => s.platform === platform);
+                  return link ? (
                     <a
-                      key={s.id}
-                      href={s.url}
+                      key={platform}
+                      href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-9 h-9 rounded-full bg-white/8 hover:bg-primary flex items-center justify-center text-white/50 hover:text-white transition-all duration-150 cursor-pointer"
-                      aria-label={s.platform}
+                      className="w-9 h-9 rounded-full bg-white/10 hover:bg-primary flex items-center justify-center text-white/60 hover:text-white transition-all duration-150 cursor-pointer"
+                      aria-label={platform}
                     >
-                      <SocialIcon platform={s.platform} />
+                      <SocialIcon platform={platform} />
                     </a>
-                  ))}
-                </div>
-              )}
+                  ) : (
+                    <div
+                      key={platform}
+                      className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center text-white/20"
+                      title={`${platform} — add link in Admin › Settings`}
+                    >
+                      <SocialIcon platform={platform} />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Services */}
