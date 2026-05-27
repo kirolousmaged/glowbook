@@ -100,3 +100,23 @@ model PointsConfig {
   pointsThreshold  Int    @default(100)
   couponDiscount   Int    @default(15)
 }
+
+model SocialLink {
+  id        String  @id @default(cuid())
+  platform  String
+  url       String
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+}
+
+model Branch {
+  id        String  @id @default(cuid())
+  name      String
+  address   String?
+  area      String?
+  hours     String?
+  mapUrl    String?
+  phone     String?
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+}
